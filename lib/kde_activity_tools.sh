@@ -188,6 +188,7 @@ verify_screen()
 local test_screen=$1
 local -n screen_available_ref=$2
 local js_script
+local BUS
 
     logd "In verify_screen"
     js_script=$(<"$wdir/lib/verify_screen.js")

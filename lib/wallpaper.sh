@@ -64,9 +64,9 @@ local start end elapsed
     if (( wallpaper_replaced == 1 )); then
         logv "Wallpaper replaced."
     else
-        printf "Wallpaper could not be replaced.\n"
-        printf "The configured screen is not connected.\n"
-        printf "A 'Default' wallpaper will be used.\n"
+        loge "Wallpaper could not be replaced."
+        loge "The configured screen is not connected."
+        loge "A 'Default' wallpaper will be used."
     fi
 
     # Restore the previously active Activity

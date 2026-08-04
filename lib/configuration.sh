@@ -652,10 +652,10 @@ local start end elapsed
         url_for_prev_year="$nasa_prev_year_url"
     else
         # incorrect configuration, needs to be updated for new year.
-        echo "Configuration error."
-        echo
-        echo "Please update:"
-        echo "    $configfile"
+        loge "Configuration error."
+        loge " "
+        loge "Please update:"
+        loge "    $configfile"
         exit 1
     fi
 
@@ -678,10 +678,10 @@ local start end elapsed
 #==================================================================================================
 fatal_configuration_error()
 {
-    echo
-    echo "Fatal configuration error: $1"
-    echo "    $2"
-    echo "Exiting."
+    loge " "
+    loge "Fatal configuration error: $1"
+    loge "    $2"
+    loge "Exiting."
     exit 1
 }
 
@@ -695,9 +695,9 @@ fatal_configuration_error()
 #==================================================================================================
 configuration_error()
 {
-    echo
-    echo "Configuration error: $1"
-    echo "    $2"
+    loge " "
+    loge "Configuration error: $1"
+    loge "    $2"
     return 2
 }
 

@@ -18,8 +18,8 @@
 # Script to download information about moon phases and an image of the moon in the current
 # moon phase from the NASA web page https://svs.gsfc.nasa.gov/.
 # A nice image is created by overlaying the moon phase information to the downloaded image.
-# Finally, the image is set as the wallpaper on screen 2 of the 'Main Screen' Activity.
-# This script is called by a user-specific systemd timer at minute 0 of every hour
+# Finally, the image is set as the wallpaper on the screen of the Activity selected during
+# configuration. This script is called by a user-specific systemd timer at minute 0 of every hour.
 #
 # Features:
 # - Automatic download of NASA yearly Moon dataset
