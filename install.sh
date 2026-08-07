@@ -55,7 +55,7 @@ main()
 
     check_dependencies || return 1
 
-    install_systemd_integration || return 1
+    configure_systemd_integration || return 1
 
     goodbye
 }
@@ -73,7 +73,7 @@ welcome()
     echo
     echo "    ✓ verify the installation environment"
     echo "    ✓ check required software"
-    echo "    ✓ optionally install the user systemd timer"
+    echo "    ✓ optionally configure the user systemd timer"
     echo
     echo " Your existing configuration will never be modified without your consent."
     echo
@@ -218,66 +218,31 @@ local -a missing
  }
 
 #==================================================================================================
-# install_systemd_integration
+# configure_systemd_integration
 #
-# Created and enables the systemd timer to run the script hourly (if the user wants this)
+# Configures and enables the systemd timer to run the script at a user-defined interval.
 #==================================================================================================
-install_systemd_integration()
+configure_systemd_integration()
 {
 local answer
-local service_file
-local timer_file
-local service_target
-local timer_target
-local systemd_dir
+local interval
+local MIN_INTERVAL=3
+local MAX_INTERVAL=60
+local DEFAULT_INTERVAL=5
 
     headline " MoonPhaseWallpaper Installation: systemd timer"
-    ask_yes_no " Install and enable the optional user systemd timer? [Y/n]: " answer
+    ask_yes_no " Configure systemd timer for automatic wallpaper updates? [Y/n]: " answer
 
     echo
     if [[ $answer == y ]]; then
-        service_file="moon_wallpaper.service"
-        timer_file="moon_wallpaper.timer"
+        ask_positive_integer \
+            " Update interval in minutes (3-60) [5]:" \
+            "$MIN_INTERVAL" \
+            "$MAX_INTERVAL" \
+            "$DEFAULT_INTERVAL" \
+            interval
 
-        systemd_dir="$HOME/.config/systemd/user"
-        service_target="$systemd_dir/$service_file"
-        timer_target="$systemd_dir/$timer_file"
-
-        mkdir -p "$systemd_dir"
-
-        # Copy the service template
-        cp -f "$wdir/systemd/$service_file" "$service_target" || {
-            logv "Failed to copy systemd service."
-            return 1
-        }
-
-        # Replace placeholder with installation directory
-        sed -i "s|@INSTALL_DIR@|$wdir|g" "$service_target" || {
-            logv "Failed to replace @INSTALL_DIR@ in systemd service."
-            return 1
-        }
-
-        # Copy the timer template
-        cp -f "$wdir/systemd/$timer_file" "$timer_target" || {
-            logv "Failed to copy systemd timer."
-            return 1
-        }
-
-        # Reload the user systemd configuration and enable the timer:
-        systemctl --user daemon-reload || {
-            logv "Failed to reload systemd daemon."
-            return 1
-        }
-
-        systemctl --user enable --now moon_wallpaper.timer || {
-            logv "Failed to enable moon_wallpaper.timer."
-            return 1
-        }
-
-        echo
-        echo " ✓ systemd user timer installed and enabled successfully."
-        echo
-        echo " The wallpaper will now be updated automatically every hour."
+        install_systemd_timer "$interval" || return 1
     else
         echo
         echo " Not installing systemd timer."
@@ -285,6 +250,79 @@ local systemd_dir
     echo
     echo " Press <Enter> to continue..."
     read -r
+}
+
+#==================================================================================================
+# install_systemd_timer
+#
+# Install and configure the user systemd integration.
+#==================================================================================================
+install_systemd_timer()
+{
+local interval="$1"
+local service_file
+local timer_file
+local service_target
+local timer_target
+local systemd_dir
+
+    service_file="moon_wallpaper.service"
+    timer_file="moon_wallpaper.timer"
+
+    systemd_dir="$HOME/.config/systemd/user"
+    service_target="$systemd_dir/$service_file"
+    timer_target="$systemd_dir/$timer_file"
+
+    mkdir -p "$systemd_dir"
+
+    # Stop the timer before replacing the timer definition.
+    # This ensures a changed OnCalendar schedule becomes effective.
+    systemctl --user disable --now moon_wallpaper.timer >/dev/null 2>&1 || true
+
+    # Copy the service template
+    cp -f "$wdir/systemd/$service_file" "$service_target" || {
+        logv "Failed to copy systemd service."
+        return 1
+    }
+
+    # Replace placeholder with installation directory
+    sed -i "s|@INSTALL_DIR@|$wdir|g" "$service_target" || {
+        logv "Failed to replace @INSTALL_DIR@ in systemd service."
+        return 1
+    }
+
+    # Copy the timer template
+    cp -f "$wdir/systemd/$timer_file" "$timer_target" || {
+        logv "Failed to copy systemd timer."
+        return 1
+    }
+
+    # Replace placeholder with update interval
+    if (( interval == 60 )); then
+        oncalendar="hourly"
+    else
+        oncalendar="*:0/$interval"
+    fi
+    sed -i "s|@INTERVAL@|$oncalendar|g" "$timer_target" || {
+        logv "Failed to replace @INTERVAL@ in systemd service."
+        return 1
+    }
+
+    # Reload the user systemd configuration and enable the timer:
+    systemctl --user daemon-reload || {
+        logv "Failed to reload systemd daemon."
+        return 1
+    }
+
+    systemctl --user enable --now moon_wallpaper.timer || {
+        logv "Failed to enable moon_wallpaper.timer."
+        return 1
+    }
+
+    echo
+    echo " ✓ systemd user timer installed and enabled successfully."
+    echo
+    echo " The wallpaper will now be updated automatically every $interval minutes."
 }
 
 #==================================================================================================
@@ -333,6 +371,50 @@ local -n answer_ref=$2
         fi
 
         echo " Please enter exactly one of these characters: Y, y, N, or n."
+        echo
+    done
+}
+
+#==================================================================================================
+# ask_positive_integer
+#
+# Asks the user to input a positive number in a certain interval with a variable prompt
+# Only positive integers within the specified interval are accepted.
+# For input without a value, the specified default is provided.
+# Data validation is included.
+# Inputs:
+#   $1  prompt
+#   $2  minimum
+#   $3  maximum
+#   $4  default
+# Output
+#   $5  entered value
+#==================================================================================================
+ask_positive_integer()
+{
+local prompt="$1"
+local minimum="$2"
+local maximum="$3"
+local default="$4"
+local -n answer_ref="$5"
+
+    while true; do
+        read -rp " $prompt " answer_ref
+
+        # User just pressed Enter -> use defaults
+        if [[ -z $answer_ref ]]; then
+            answer_ref="$default"
+            break
+        fi
+        if [[ $answer_ref =~ ^[1-9][0-9]*$ ]]; then
+            if [[ $answer_ref -ge $minimum ]]; then
+                if [[ $answer_ref -le $maximum ]]; then
+                    break
+                fi
+            fi
+        fi
+
+        echo " Please enter a value in the range [$minimum..$minimum]."
         echo
     done
 }

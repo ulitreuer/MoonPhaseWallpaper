@@ -110,7 +110,18 @@ You can update the wallpaper manually by running
 
 or automatically every hour using the user `systemd` timer.
 
-## 8. Updating
+## 8. Changing the update interval
+
+To change the wallpaper update interval, simply run the installer again:
+
+```bash
+cd ~/Projects/MoonPhaseWallpaper
+./install.sh
+```
+
+In the final installation step, you can reconfigure the optional systemd timer and choose a new update interval between 5 and 60 minutes.
+
+## 9. Updating
 
 To update MoonPhaseWallpaper:
 
@@ -120,9 +131,9 @@ git pull
 ./install.sh
 ```
 
-Running the installer again is safe. It verifies the installation and updates the optional systemd integration if required.
+Running the installer again is always safe. It verifies the installation and updates the optional systemd integration, including the wallpaper update interval if required.
 
-## 9. Uninstallation
+## 10. Uninstallation
 
 To completely remove MoonPhaseWallpaper:
 

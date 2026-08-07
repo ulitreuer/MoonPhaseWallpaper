@@ -5,8 +5,8 @@ Description=Run MoonPhaseWallpaper every hour
 # Run once immediately after login
 OnStartupSec=30s
 
-# Run every full hour (01:00, 02:00, 03:00, ...)
-OnCalendar=hourly
+# Run at interval specified during installation
+OnCalendar=@INTERVAL@
 
 [Install]
 WantedBy=timers.target

@@ -2,9 +2,9 @@
 
 Generate beautiful KDE Plasma wallpapers using NASA Moon imagery. 
 
-Unlike static Moon wallpapers, MoonPhaseWallpaper updates the displayed Moon every hour using real NASA imagery and observer-dependent astronomical calculations.
+Unlike static Moon wallpapers, MoonPhaseWallpaper updates the displayed Moon automatically using real NASA imagery and observer-dependent astronomical calculations.
 
-> MoonPhaseWallpaper is designed for KDE Plasma on Linux. It uses NASA Scientific Visualization Studio (SVS) Moon imagery and astronomical calculations to generate observer-dependent wallpapers that update automatically every hour.
+> MoonPhaseWallpaper is designed for KDE Plasma on Linux. It uses NASA Scientific Visualization Studio (SVS) Moon imagery and astronomical calculations to generate observer-dependent wallpapers that update automatically.
 
 ![Desktop View](readme_images/desktop_screenshot.png)
 
@@ -21,7 +21,8 @@ Unlike static Moon wallpapers, MoonPhaseWallpaper updates the displayed Moon eve
 ## Highlights
 
 - Observer-dependent Moon orientation
-- Automatic hourly updates
+- Automatic updates with configurable interval
+- Efficient caching of NASA Moon images to minimize network traffic
 - Interactive Configuration Wizard
 - KDE Plasma Activities support
 - No background daemon required (systemd timer)
@@ -73,7 +74,7 @@ Generate or update the wallpaper manually:
 ./moon_wallpaper.sh
 ```
 
-To update the wallpaper automatically every hour, configure the included `systemd` user timer.
+To update the wallpaper automatically, configure the included `systemd` user timer and choose the desired update interval.
 
 > The generated wallpaper is written to the project's `images/` directory before being applied to the configured KDE Activity and screen.
 

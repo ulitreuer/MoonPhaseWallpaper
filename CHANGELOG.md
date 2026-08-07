@@ -6,6 +6,12 @@ The format is inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 and this project adheres to Semantic Versioning.
 
 ---
+## [1.1.0] - 2026-08-07
+
+### Changed
+
+- Wallpaper updates can now be configured at shorter intervals to better reflect the continuously changing observer-dependent Moon orientation. Downloaded Moon images are cached, so the required download volume remains unchanged.
+
 ## [1.0.3] - 2026-08-07
 
 ### Changed
