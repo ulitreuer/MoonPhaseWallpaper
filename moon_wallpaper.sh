@@ -53,7 +53,8 @@ source "$wdir/lib/kde_activity_tools.sh"
 
 source "$wdir/lib/astronomy.sh"
 source "$wdir/lib/image_processing.sh"
-source "$wdir/lib/read_moon_data_images.sh"
+source "$wdir/lib/moon_data.sh"
+source "$wdir/lib/moon_images.sh"
 source "$wdir/lib/wallpaper.sh"
 
 # Evaluate command line options
@@ -165,7 +166,7 @@ image_processing wallpaper_name
 
 # Call the function to set the completed image as the new wallpaper on the second display
 # in Activity 'Main Screen'
-set_wallpaper $wallpaper_name
+set_wallpaper "$wallpaper_name"
 
 #--------------------------------------------------------------------------------------------------
 # Once completed, overwrite logfile

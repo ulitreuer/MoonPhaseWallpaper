@@ -42,13 +42,17 @@ local -a rotation_day_utc
 local -a rotation_mon_utc
 local -a rotation_year_utc
 local utc_hour utc_min utc_sec
+local cache_name
 
     start=$(date +%s.%N)
     logv "In image_processing"
+
     cd "$imdir" || {
         logv "ERROR: cannot enter $imdir" >&2
         exit 1
     }
+
+get_cache_name cache_name
 
     for (( i=0; i<7; i++ )); do
         read -r \
@@ -71,6 +75,8 @@ local utc_hour utc_min utc_sec
 
     y_pos=1025
     for (( i=0; i<7; i++ )); do
+logd "Cache name : $cache_name"
+logd "Image path : $cache_name/${moonimage[i]}"
         rotation=$(calc_moon_rotation \
             "${rotation_day_utc[i]}" \
             "${rotation_mon_utc[i]}" \
@@ -130,7 +136,7 @@ local utc_hour utc_min utc_sec
             magick \
                 stars_background.tif \
                     -resize "${new_x}x${new_y}" \
-                \( "${moonimage[i]}" \
+                \( "$cache_name"/"${moonimage[i]}" \
                     -resize "${new_x}x${new_y}" \
                     -background none \
                     -rotate "$rotation" \
@@ -176,7 +182,7 @@ local utc_hour utc_min utc_sec
                 \( \
                     stars_background.tif \
                         -resize "${new_x}x${new_y}" \
-                    \( "${moonimage[i]}" \
+                    \( "$cache_name"/"${moonimage[i]}" \
                         -resize "${new_x}x${new_y}" \
                         -background none \
                         -rotate "$rotation" \
@@ -205,7 +211,7 @@ local utc_hour utc_min utc_sec
                 final.tif
         fi
         # Remove the downloaded image to free disk space.
-        rm -f "${moonimage[i]}"
+        rm -f "$cache_name"/"${moonimage[i]}"
     done
 
     # create a unique wallpaper name current including date and time
@@ -218,6 +224,8 @@ local utc_hour utc_min utc_sec
     magick final.tif $wallpaper_name_ref
     # Remove last temporary file
     rm -f final.tif
+    rm --dir "$cache_name" # the cache folder
+
     end=$(date +%s.%N)
     elapsed=$(awk "BEGIN { printf \"%.2f\", $end - $start }")
     logd "Completed in ${elapsed} seconds."
@@ -233,6 +241,7 @@ local utc_hour utc_min utc_sec
 clear_image_dir()
 {
 local start end elapsed
+local cache_name
 
     start=$(date +%s.%N)
     logv "In clear_image_dir"
@@ -241,7 +250,10 @@ local start end elapsed
         exit 1
     }
     logv "Removing potential leftovers images"
-    rm -f moon.[0-9][0-9][0-9][0-9].tif # downloaded images
+    get_cache_name cache_name
+
+    rm -f "$cache_name"/moon.[0-9][0-9][0-9][0-9].tif # downloaded images
+    rm --dir "$cache_name" # the cache folder
     rm -f final.tif # intermediate file from ImageMagick
     end=$(date +%s.%N)
     elapsed=$(awk "BEGIN { printf \"%.2f\", $end - $start }")

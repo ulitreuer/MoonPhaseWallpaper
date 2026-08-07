@@ -3,10 +3,10 @@
 #==============================================================================
 #  Project:     MoonPhaseWallpaper
 #------------------------------------------------------------------------------
-#  File:        read_moon_data_images.sh
+#  File:        read_calculate_moon_data.sh
 #  Author:      Uli Treuer
-#  Purpose:     Downloads and extracts moon data information and images from
-#               the NASA web page for MoonPhaseWallpaper.
+#  Purpose:     Downloads and extracts moon data information from the NASA
+#               web page for MoonPhaseWallpaper.
 #
 #  Copyright (c) 2026 Uli Treuer
 #  License: MIT
@@ -69,7 +69,6 @@ local raw_line
 local age age1
 local t d h m
 local tmp
-local utc_doy utc_hour
 local first_hour
 local start end elapsed
 local MOON_EVENT_LOOKBACK_HOURS=3   # calculate three hours into previous day to catch events near midnight
@@ -83,27 +82,11 @@ readonly MOON_EVENT_LOOKBACK_HOURS
         # date and time (in local time zone)
         datestamp+=("$(date -d "$i days ago" '+%d-%b-%Y')")
         timestamp+=("$(date -d "$i days ago" '+%H:00')") # always ends with ':00' as there is one picture per hour.
-        selected_year=$(date --utc -d "$i days ago" +"%Y")
         logd "datestamp:     ${datestamp[i]}"
         logd "timestamp:     ${timestamp[i]}"
-        # calculate hour of the year
-        utc_doy=$(date --utc -d "$i days ago" +%j)
-        utc_hour=$(date --utc -d "$i days ago" +%H)
-        num=$(( (10#$utc_doy - 1) * 24 + 10#$utc_hour + 1 ))
-        logd "Hour of Year:  "$num
 
-        #----------------------------------------------------------------------------------------------
-        # determine name and URL of the moon image to be downloaded from the NASA web page
-        moonimage+=("moon.$(printf "%04d" $num).tif") # filename for image to download
-
-        if [[ "$selected_year" -eq "$this_year" ]]; then
-            moonimage_URL+=("$url_for_this_year/frames/3840x2160_16x9_30p/plain/${moonimage[i]}")  # URL for download
-        else
-            moonimage_URL+=("$url_for_prev_year/frames/3840x2160_16x9_30p/plain/${moonimage[i]}")  # URL for download
-        fi
-        logd "Moonimage:     ${moonimage[i]}"
-        logd "Moonimage_URL: ${moonimage_URL[i]}"
-        #----------------------------------------------------------------------------------------------
+        selected_year=$(date --utc -d "$i days ago" +"%Y")
+        calculate_hour_of_year "$i" num
 
         # read the corresponding line from the mooninfo file (1 line per hour of the year)
         line_index=$num     # mapfile uses zero-based indexing:
@@ -220,30 +203,22 @@ readonly MOON_EVENT_LOOKBACK_HOURS
     logv " "
 }
 
-
 #==================================================================================================
-# download_moon_images
+# calculate_hour_of_year
 #
-# download all moon images as defined before from the NASA web page in parallel
+# Calculate the current hour of the year (either for current day or several days ago).
 #==================================================================================================
-download_moon_images()
+calculate_hour_of_year()
 {
-local i
-local start end elapsed
+local days_ago=$1
+local -n num_ref=$2
+local utc_doy utc_hour
 
-    start=$(date +%s.%N)
-    logv "In download_moon_images"
-    for (( i=0; i<7; i++ )); do
-        logv "Downloading image $((i+1)) of 7"
-        # download the moon image
-        curl -L -o "$imdir"/"${moonimage[$i]}" "${moonimage_URL[$i]}" 2> /dev/null &
-    done
-    wait # wait until all downloads have been completed
-    end=$(date +%s.%N)
-    elapsed=$(awk "BEGIN { printf \"%.2f\", $end - $start }")
-    logd "Completed in ${elapsed} seconds."
-    logv "================================================================================"
-    logv " "
+    # calculate hour of the year
+    utc_doy=$(date --utc -d "$days_ago days ago" +%j)
+    utc_hour=$(date --utc -d "$days_ago days ago" +%H)
+    num_ref=$(( (10#$utc_doy - 1) * 24 + 10#$utc_hour + 1 ))
+    logd "Hour of Year:  $num_ref"
 }
 
 # --- This is the end, my friend ------------------------------------------------------------------
