@@ -37,6 +37,11 @@ local text6
 local text7
 local text8
 local start end elapsed
+local -a rotation_hour_utc
+local -a rotation_day_utc
+local -a rotation_mon_utc
+local -a rotation_year_utc
+local utc_hour utc_min utc_sec
 
     start=$(date +%s.%N)
     logv "In image_processing"
@@ -45,14 +50,36 @@ local start end elapsed
         exit 1
     }
 
+    for (( i=0; i<7; i++ )); do
+        read -r \
+            rotation_day_utc[i] \
+            rotation_mon_utc[i] \
+            rotation_year_utc[i] \
+            utc_hour utc_min utc_sec <<<"$(
+                date --utc -d "$i days ago" '+%d %m %Y %H %M %S'
+            )"
+        rotation_hour_utc+=("$(awk \
+            -v h="$utc_hour" \
+            -v m="$utc_min" \
+            -v s="$utc_sec" \
+            'BEGIN { printf "%.8f", h + m/60 + s/3600 }')")
+
+        logd "Day $i"
+        logd "Datestamp:      ${rotation_day_utc[i]}-${rotation_mon_utc[i]}-${rotation_year_utc[i]}"
+        logd "Rotation Hour:  ${rotation_hour_utc[i]}"
+    done
+
     y_pos=1025
     for (( i=0; i<7; i++ )); do
         rotation=$(calc_moon_rotation \
-            "${datestamp[i]}" \
-            "${timestamp[i]}" \
+            "${rotation_day_utc[i]}" \
+            "${rotation_mon_utc[i]}" \
+            "${rotation_year_utc[i]}" \
+            "${rotation_hour_utc[i]}" \
             "${ra[i]}" \
             "${dec[i]}" \
             "${axisA[i]}")
+        logd "Rotation Angle: ${rotation}"
 
         if (( i == 0 )); then
             new_x=1920

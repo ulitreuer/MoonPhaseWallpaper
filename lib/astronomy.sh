@@ -17,56 +17,30 @@
 # Calculate the apparent orientation of the Moon for the configured observer location.
 #
 # Input:
-#   $1  datestamp
-#   $2  timestamp  (UTC)
-#   $3  Right Ascension (hours)
-#   $4  Declination (degrees)
-#   $5  AxisA (degrees from NASA file)
+#   $1  day
+#   $2  month
+#   $3  year
+#   $4  hour (fractional, UTC)
+#   $5  Right Ascension (hours)
+#   $6  Declination (degrees)
+#   $7  AxisA (degrees from NASA file)
 #
 # Output:
 #   Rotation angle for ImageMagick
 #==================================================================================================
 calc_moon_rotation()
 {
-    local datestamp="$1"
-    local timestamp="$2"
-    local ra="$3"
-    local dec="$4"
-    local axis="$5"
+    local day="$1"
+    local month="$2"
+    local year="$3"
+    local hour="$4"
+    local ra="$5"
+    local dec="$6"
+    local axis="$7"
     local latitude longitude
 
     # Get observer location as defined by configuration.
     conf_get_observer_data latitude longitude
-
-    #######################################################################
-    # Extract year, month, day and hour from the strings.
-    #######################################################################
-
-    local day="${datestamp:0:2}"
-    local mon="${datestamp:3:3}"
-    local year="${datestamp:7:4}"
-
-    local hour="${timestamp:0:2}"
-    local month
-
-    case "$mon" in
-        Jan) month=1 ;;
-        Feb) month=2 ;;
-        Mar) month=3 ;;
-        Apr) month=4 ;;
-        May) month=5 ;;
-        Jun) month=6 ;;
-        Jul) month=7 ;;
-        Aug) month=8 ;;
-        Sep) month=9 ;;
-        Oct) month=10 ;;
-        Nov) month=11 ;;
-        Dec) month=12 ;;
-        *)
-            echo "Unknown month '$mon'" >&2
-            return 1
-            ;;
-    esac
 
     awk \
         -i "$AWK_ASTRONOMY" \
@@ -193,35 +167,7 @@ calc_moonrise_set()
     }
 
     {
-        gsub(/ +/," ")
-
-        day  = $1
-        mon  = $2
-        year = $3
-
-        split($4,t,":")
-
-        hour = t[1] + 0
-
-        phase = $6 + 0
-        age   = $7 + 0
-        dist  = $9 + 0
-
-        if(mon=="Jan") month=1
-        else if(mon=="Feb") month=2
-        else if(mon=="Mar") month=3
-        else if(mon=="Apr") month=4
-        else if(mon=="May") month=5
-        else if(mon=="Jun") month=6
-        else if(mon=="Jul") month=7
-        else if(mon=="Aug") month=8
-        else if(mon=="Sep") month=9
-        else if(mon=="Oct") month=10
-        else if(mon=="Nov") month=11
-        else if(mon=="Dec") month=12
-
-        ra  = $10 + 0
-        dec = $11 + 0
+        parse_moon_record()
 
         line_index = NR + 0
 

@@ -6,6 +6,12 @@ The format is inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 and this project adheres to Semantic Versioning.
 
 ---
+## [1.0.3] - 2026-08-07
+
+### Changed
+
+- Improved observer-dependent Moon orientation by calculating the apparent rotation using the current UTC time instead of the beginning of the NASA image hour.
+
 ## [1.0.2] - 2026-08-04
 
 ### Changed

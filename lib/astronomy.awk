@@ -147,4 +147,55 @@ function normalize180(angle)
     return angle
 }
 
+###############################################################################
+# Helper functions supporting the parsing of NASA mooninfo records.
+###############################################################################
+
+function month_to_number(mon)
+{
+    return (mon=="Jan" ? 1 :
+            mon=="Feb" ? 2 :
+            mon=="Mar" ? 3 :
+            mon=="Apr" ? 4 :
+            mon=="May" ? 5 :
+            mon=="Jun" ? 6 :
+            mon=="Jul" ? 7 :
+            mon=="Aug" ? 8 :
+            mon=="Sep" ? 9 :
+            mon=="Oct" ? 10 :
+            mon=="Nov" ? 11 :
+            mon=="Dec" ? 12 : 0)
+}
+
+###############################################################################
+# Parse the current NASA mooninfo record.
+#
+# Sets the following global variables:
+#
+#   day, month, year, hour
+#   phase, age, dist
+#   ra, dec
+###############################################################################
+function parse_moon_record(      time)
+{
+    gsub(/ +/, " ")
+
+    day  = $1
+    mon  = $2
+    year = $3
+
+    split($4, time, ":")
+
+    hour = time[1] + 0
+
+    phase = $6 + 0
+    age   = $7 + 0
+    dist  = $9 + 0
+
+    ra  = $10 + 0
+    dec = $11 + 0
+
+    month = month_to_number(mon)
+}
+
 # --- This is the end, my friend ------------------------------------------------------------------
