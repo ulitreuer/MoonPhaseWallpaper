@@ -210,8 +210,6 @@ logd "Image path : $cache_name/${moonimage[i]}"
                 -composite \
                 final.tif
         fi
-        # Remove the downloaded image to free disk space.
-        rm -f "$cache_name"/"${moonimage[i]}"
     done
 
     # create a unique wallpaper name current including date and time
@@ -222,9 +220,8 @@ logd "Image path : $cache_name/${moonimage[i]}"
 
     # Convert the final image to PNG to reduce file size.
     magick final.tif $wallpaper_name_ref
-    # Remove last temporary file
-    rm -f final.tif
-    rm --dir "$cache_name" # the cache folder
+
+    clear_image_dir
 
     end=$(date +%s.%N)
     elapsed=$(awk "BEGIN { printf \"%.2f\", $end - $start }")
@@ -233,34 +230,6 @@ logd "Image path : $cache_name/${moonimage[i]}"
     logv " "
 }
 
-#==================================================================================================
-# clear_image_dir
-#
-# Cleanup (just in case the previous run was interrupted and there are leftovers)
-#==================================================================================================
-clear_image_dir()
-{
-local start end elapsed
-local cache_name
-
-    start=$(date +%s.%N)
-    logv "In clear_image_dir"
-    cd "$imdir" || {
-        logv "ERROR: cannot enter $imdir" >&2
-        exit 1
-    }
-    logv "Removing potential leftovers images"
-    get_cache_name cache_name
-
-    rm -f "$cache_name"/moon.[0-9][0-9][0-9][0-9].tif # downloaded images
-    rm --dir "$cache_name" # the cache folder
-    rm -f final.tif # intermediate file from ImageMagick
-    end=$(date +%s.%N)
-    elapsed=$(awk "BEGIN { printf \"%.2f\", $end - $start }")
-    logd "Completed in ${elapsed} seconds."
-    logv "================================================================================"
-    logv " "
-}
 
 #==================================================================================================
 # create_wallpaper_name

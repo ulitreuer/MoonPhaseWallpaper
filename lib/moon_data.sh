@@ -3,7 +3,7 @@
 #==============================================================================
 #  Project:     MoonPhaseWallpaper
 #------------------------------------------------------------------------------
-#  File:        read_calculate_moon_data.sh
+#  File:        moon_data.sh
 #  Author:      Uli Treuer
 #  Purpose:     Downloads and extracts moon data information from the NASA
 #               web page for MoonPhaseWallpaper.
