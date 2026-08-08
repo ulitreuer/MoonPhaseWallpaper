@@ -84,7 +84,6 @@ To update the wallpaper automatically, configure the included `systemd` user tim
 |--------|----------------------|--------------------------------|
 | `-c`   | Configuration Wizard | Start the Configuration Wizard |
 | `-d`   | Debug mode           | Show (very) detailed information during execution |
-| `-f`   | Force execution      | Force wallpaper generation even if it has already been created for the current hour |
 | `-v`   | Verbose mode         | Display progress information during execution |
 
 

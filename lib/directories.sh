@@ -27,7 +27,6 @@ local start end elapsed
     mkdir -p "$imdir"
     readonly ddir="$wdir/data"                  # data directory
     mkdir -p "$ddir"
-    readonly logfile="$ddir/last_run.log"
 
     readonly configdir="$wdir/configuration"    # configuration directory
     mkdir -p "$configdir"
@@ -39,7 +38,6 @@ local start end elapsed
     logd "wdir:      $wdir"
     logd "imdir:     $imdir"
     logd "ddir:      $ddir"
-    logd "logfile:          $logfile"
     logd "configdir:        $configdir"
     logd "configfile:       $configfile"
     logd "default config:   $configfile_default"

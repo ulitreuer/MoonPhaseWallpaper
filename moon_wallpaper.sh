@@ -58,24 +58,21 @@ source "$wdir/lib/moon_images.sh"
 source "$wdir/lib/wallpaper.sh"
 
 # Evaluate command line options
-force_run_mode=false
 debug_mode=false
 verbose_mode=false
 configuration_mode=false
-while getopts ":cdfv" opt; do
+while getopts ":cdv" opt; do
     case "$opt" in
         c)
             configuration_mode=true ;;
         d)
             debug_mode=true ;;
-        f)
-            force_run_mode=true ;;
         v)
             verbose_mode=true ;;
         \?)
             echo "Unknown option: -$OPTARG"
             echo "Usage:"
-            echo "    moon_wallpaper.sh [-c] [-d] [-f] [-v]"
+            echo "    moon_wallpaper.sh [-c] [-d] [-v]"
             exit 1
             ;;
     esac
@@ -88,20 +85,6 @@ set_directories
 if $configuration_mode; then
     configure_application
     exit 0
-fi
-
-#--------------------------------------------------------------------------------------------------
-# Check whether a new run is actually needed. Script needs to run only once per hour
-readonly logtimestamp="$(date "+%d-%b-%Y") $(date "+%H:00")"
-if ! $force_run_mode; then
-    # If logfile exists, compare
-    if [[ -f "$logfile" ]]; then
-        read -r previous < "$logfile"
-        if [[ "$logtimestamp" == "$previous" ]]; then
-            logv "Same timestamp as last run. Exiting script."
-            exit 0
-        fi
-    fi
 fi
 
 # Read all configuration data
@@ -169,9 +152,6 @@ image_processing wallpaper_name
 set_wallpaper "$wallpaper_name"
 
 #--------------------------------------------------------------------------------------------------
-# Once completed, overwrite logfile
-echo "$logtimestamp" > "$logfile"
-logv "New timestamp recorded."
 logv "Moon Wallpaper successfully updated."
 logv "Completed in ${SECONDS} seconds."
 logv "================================================================================"
