@@ -26,8 +26,9 @@
 # for determining run duration
 SECONDS=0
 
-# enable logging during installation
-verbose_mode=true
+# disable logging during installation
+verbose_mode=false
+debug_mode=false
 
 # Determine the directory containing this script.
 # (directory in which the script is located - no matter what it is called)
@@ -67,8 +68,8 @@ main()
 #==================================================================================================
 welcome()
 {
-    clear
-    headline " MoonPhaseWallpaper: Installation"
+
+    headline "MoonPhaseWallpaper: Installation"
     echo " This script will"
     echo
     echo "    ✓ verify the installation environment"
@@ -102,7 +103,7 @@ local -a required=(
     systemd
 )
 
-    headline " MoonPhaseWallpaper: Repository Verification"
+    headline "MoonPhaseWallpaper: Repository Verification"
 
     for item in "${required[@]}"; do
         if [[ ! -e "$item" ]]; then
@@ -112,13 +113,11 @@ local -a required=(
     done
 
     if $missing; then
-        echo
         echo " This script must be executed from the MoonPhaseWallpaper project directory."
         echo
         echo " Press <Enter> to continue..."
         read -r
     else
-        echo
         echo " ✓ Repository structure verified."
         echo
         echo " Press <Enter> to continue..."
@@ -172,7 +171,7 @@ local -a module_name=(
 
 local -a missing
 
-    headline " MoonPhaseWallpaper Installation: Check of required software"
+    headline "MoonPhaseWallpaper Installation: Check of required software"
 
     for ((i=0; i<${#module_binary[@]}; i++)); do
         check_command "${module_binary[i]}" status
@@ -230,7 +229,7 @@ local MIN_INTERVAL=3
 local MAX_INTERVAL=60
 local DEFAULT_INTERVAL=5
 
-    headline " MoonPhaseWallpaper Installation: systemd timer"
+    headline "MoonPhaseWallpaper Installation: systemd timer"
     ask_yes_no " Configure systemd timer for automatic wallpaper updates? [Y/n]: " answer
 
     echo
@@ -281,19 +280,19 @@ local systemd_dir
 
     # Copy the service template
     cp -f "$wdir/systemd/$service_file" "$service_target" || {
-        logv "Failed to copy systemd service."
+        loge "Failed to copy systemd service."
         return 1
     }
 
     # Replace placeholder with installation directory
     sed -i "s|@INSTALL_DIR@|$wdir|g" "$service_target" || {
-        logv "Failed to replace @INSTALL_DIR@ in systemd service."
+        loge "Failed to replace @INSTALL_DIR@ in systemd service."
         return 1
     }
 
     # Copy the timer template
     cp -f "$wdir/systemd/$timer_file" "$timer_target" || {
-        logv "Failed to copy systemd timer."
+        loge "Failed to copy systemd timer."
         return 1
     }
 
@@ -304,18 +303,18 @@ local systemd_dir
         oncalendar="*:0/$interval"
     fi
     sed -i "s|@INTERVAL@|$oncalendar|g" "$timer_target" || {
-        logv "Failed to replace @INTERVAL@ in systemd service."
+        loge "Failed to replace @INTERVAL@ in systemd timer."
         return 1
     }
 
     # Reload the user systemd configuration and enable the timer:
     systemctl --user daemon-reload || {
-        logv "Failed to reload systemd daemon."
+        loge "Failed to reload systemd daemon."
         return 1
     }
 
-    systemctl --user enable --now moon_wallpaper.timer || {
-        logv "Failed to enable moon_wallpaper.timer."
+    systemctl --user enable --now --quiet moon_wallpaper.timer || {
+        loge "Failed to enable moon_wallpaper.timer."
         return 1
     }
 
@@ -332,7 +331,7 @@ local systemd_dir
 #==================================================================================================
 goodbye()
 {
-    headline " MoonPhaseWallpaper: Installation Summary"
+    headline "MoonPhaseWallpaper: Installation Summary"
     echo " Installation completed successfully."
     echo
     echo " Next, configure MoonPhaseWallpaper:"
