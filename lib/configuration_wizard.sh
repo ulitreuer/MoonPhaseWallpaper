@@ -39,10 +39,6 @@ configure_application()
 
     wizard_default_latitude="$OBSERVER_LATITUDE"
     wizard_default_longitude="$OBSERVER_LONGITUDE"
-    wizard_default_curr_year="$NASA_CURR_YEAR"
-    wizard_default_curr_url="$NASA_SVS_URL_CURRENT_YEAR"
-    wizard_default_prev_year="$NASA_PREV_YEAR"
-    wizard_default_prev_url="$NASA_SVS_URL_PREVIOUS_YEAR"
 
     choose_activity
     choose_screen

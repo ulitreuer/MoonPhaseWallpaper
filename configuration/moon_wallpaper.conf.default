@@ -9,7 +9,7 @@
 #==============================================================================
 
 # Configuration version (do not change manually!)
-CONFIGURATION_VERSION=1
+CONFIGURATION_VERSION=2
 
 # KDE Activity
 # Defines the Activity (identified by its ID) and screen (0, 1, 2, ...)
@@ -36,9 +36,26 @@ OBSERVER_LONGITUDE=7.8664
 # potentially next year.
 # Navigate to https://svs.gsfc.nasa.gov/ and search for 'libration'
 # using the search field in the upper right corner of the NASA web page.
-# This is the NASA page with the data for 2026: https://svs.gsfc.nasa.gov/5587/
+# This is the NASA page with the data for 2024: https://svs.gsfc.nasa.gov/5187/
 # This is the NASA page with the data for 2025: https://svs.gsfc.nasa.gov/5415/
-NASA_CURR_YEAR=2026
-NASA_SVS_URL_CURRENT_YEAR="https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587"
-NASA_PREV_YEAR=2025
-NASA_SVS_URL_PREVIOUS_YEAR="https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415"
+# This is the NASA page with the data for 2026: https://svs.gsfc.nasa.gov/5587/
+NASA_YEAR_1="2024"
+NASA_SVS_URL_1="https://svs.gsfc.nasa.gov/vis/a000000/a005100/a005187"
+
+NASA_YEAR_2="2025"
+NASA_SVS_URL_2="https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415"
+
+NASA_YEAR_3="2026"
+NASA_SVS_URL_3="https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587"
+
+NASA_YEAR_4="2027"
+NASA_SVS_URL_4="tbd"
+
+NASA_YEAR_5="2028"
+NASA_SVS_URL_5="tbd"
+
+NASA_YEAR_6="2029"
+NASA_SVS_URL_6="tbd"
+
+NASA_YEAR_7="2030"
+NASA_SVS_URL_7="tbd"

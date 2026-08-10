@@ -102,6 +102,9 @@ declare -a moonrise
 declare -a moonset
 declare -a moonstatus
 declare -A nasa_url
+NASA_CONFIGURATION=""
+DEFAULT_NASA_CONFIGURATION=""
+ORIGINAL_CONFIGURATION_VERSION=""
 
 # Read all configuration data
 read_configuration

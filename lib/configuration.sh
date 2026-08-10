@@ -42,6 +42,13 @@ local start end elapsed
         if ! source "$configfile"; then
             return 2
         fi
+
+        if $configuration_mode; then
+            logd "Preserving NASA section from previous configuration"
+            ORIGINAL_CONFIGURATION_VERSION="$CONFIGURATION_VERSION"
+            NASA_CONFIGURATION=$(sed -n '/^# NASA data$/,$p' "$configfile")
+        fi
+
         CONFIGURATION_FILE_READ=true
         load_nasa_data_sources || return 2
         validate_configuration || return 2
@@ -159,7 +166,7 @@ local conf_version="$1"
 
     [[ -n $conf_version ]] || return 1
     validate_positive_integer_incl_zero "$conf_version" || return 1
-    (( $conf_version == 1 )) || return 1
+    (( $conf_version == 2 )) || return 1
 
     return 0
 }
@@ -400,11 +407,18 @@ local next_year_count=0
         return 1
     fi
 
-    (( curr_year_count > 1 )) && return 1
-    (( prev_year_count > 1 )) && return 1
+    if (( curr_year_count != 1 )); then
+        return 1
+    fi
+
+    if (( prev_year_count != 1 )); then
+        return 1
+    fi
 
     if $next_year_required ; then
-        (( next_year_count != 1 )) && return 1
+        if (( next_year_count != 1 )); then
+            return 1
+        fi
     fi
 
     return 0
@@ -553,6 +567,9 @@ local value="$1"
 read_default_configuration()
 {
 local start end elapsed
+local year_var
+local id
+local url_var
 
     if $CONFIGURATION_FILE_DEFAULT_READ; then
         return 0 # default configuration file was loaded before already - no need to reload it
@@ -564,18 +581,25 @@ local start end elapsed
         if ! source "$configfile_default"; then
             return 2
         fi
-        CONFIGURATION_FILE_DEFAULT_READ=true
+
+        if $configuration_mode; then
+            DEFAULT_NASA_CONFIGURATION=$(sed -n '/^# NASA data$/,$p' "$configfile_default")
+        fi
+
+       CONFIGURATION_FILE_DEFAULT_READ=true
         logd "DEFAULT_CONFIGURATION_VERSION:      $CONFIGURATION_VERSION"
         logd "DEFAULT_ACTIVITY_NAME:              $ACTIVITY_NAME"
         logd "DEFAULT_ACTIVITY_ID:                $ACTIVITY_ID"
         logd "DEFAULT_SCREEN:                     $SCREEN"
         logd "DEFAULT_OBSERVER_LATITUDE:          $OBSERVER_LATITUDE"
         logd "DEFAULT_OBSERVER_LONGITUDE:         $OBSERVER_LONGITUDE"
-        logd "DEFAULT_NASA_CURR_YEAR:             $NASA_CURR_YEAR"
-        logd "DEFAULT_NASA_SVS_URL_CURRENT_YEAR:  $NASA_SVS_URL_CURRENT_YEAR"
-        logd "DEFAULT_NASA_PREV_YEAR:             $NASA_PREV_YEAR"
-        logd "DEFAULT_NASA_SVS_URL_PREVIOUS_YEAR: $NASA_SVS_URL_PREVIOUS_YEAR"
-    else
+
+        for year_var in ${!NASA_YEAR_@}; do
+            id="${year_var#NASA_YEAR_}"
+            url_var="NASA_SVS_URL_$id"
+            logd "Default NASA entry: ${!year_var} -> ${!url_var}"
+        done
+else
         return 1
     fi
 
@@ -637,7 +661,7 @@ cat >"$configfile" <<EOF
 #==============================================================================
 
 # Configuration version (do not change manually!)
-CONFIGURATION_VERSION=1
+CONFIGURATION_VERSION=2
 
 # KDE Activity
 # Defines the Activity (identified by its ID) and screen (0, 1, 2, ...)
@@ -656,22 +680,17 @@ SCREEN="$wizard_screen"
 OBSERVER_LATITUDE="$wizard_latitude"
 OBSERVER_LONGITUDE="$wizard_longitude"
 
-# NASA data
-# Defines the URLs from which the moon images and data will be downloaded.
-# This section must be updated at the end of each year for the following year
-# (as the URL on the NASA site does not follow any systematic convention).
-# Check the API view on the NASA page for the URL for the current and
-# potentially next year.
-# Navigate to https://svs.gsfc.nasa.gov/ and search for 'libration'
-# using the search field in the upper right corner of the NASA web page.
-# This is the NASA page with the data for 2026: https://svs.gsfc.nasa.gov/5587/
-# This is the NASA page with the data for 2025: https://svs.gsfc.nasa.gov/5415/
-NASA_CURR_YEAR="$wizard_default_curr_year"
-NASA_SVS_URL_CURRENT_YEAR="$wizard_default_curr_url"
-NASA_PREV_YEAR="$wizard_default_prev_year"
-NASA_SVS_URL_PREVIOUS_YEAR="$wizard_default_prev_url"
-
 EOF
+
+    if [[ -n $NASA_CONFIGURATION ]]; then
+        if [[ $ORIGINAL_CONFIGURATION_VERSION == "2" ]]; then # the existing config version is current
+            printf '%s\n' "$NASA_CONFIGURATION" >> "$configfile"
+            else
+                printf '%s\n' "$DEFAULT_NASA_CONFIGURATION" >> "$configfile"
+            fi
+    else
+        printf '%s\n' "$DEFAULT_NASA_CONFIGURATION" >> "$configfile"
+    fi
 }
 
 #==================================================================================================
