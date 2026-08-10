@@ -6,6 +6,21 @@ The format is inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 and this project adheres to Semantic Versioning.
 
 ---
+## [1.2.0] - 2026-08-10
+
+### Added
+
+- Interpolation between consecutive hours of NASA moon data to improve the accuracy of moon position and related information when the script is run more frequently than once per hour.
+- Support for flexible NASA year/URL configuration entries, allowing multiple years to be maintained in the configuration file.
+- Automatic migration of version 1 configuration files to the new version 2 format when using the Configuration Wizard.
+
+### Changed
+
+- Updated the configuration file format to version 2.
+- NASA moon data sources are now selected automatically based on the required year.
+- The Configuration Wizard preserves existing NASA data source entries when they are compatible with the current configuration format.
+- Added handling for interpolation across the end-of-year boundary.
+
 ## [1.1.1] - 2026-08-08
 
 ### Changed
