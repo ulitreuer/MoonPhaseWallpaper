@@ -6,6 +6,12 @@ The format is inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 and this project adheres to Semantic Versioning.
 
 ---
+## [1.2.1] - 2026-08-10
+
+### Fixed
+
+- Added the missing upgrade instruction to run the Configuration Wizard when updating an existing installation to v1.2.0.
+
 ## [1.2.0] - 2026-08-10
 
 ### Added

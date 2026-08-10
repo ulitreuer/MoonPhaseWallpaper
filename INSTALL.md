@@ -129,9 +129,12 @@ To update MoonPhaseWallpaper:
 cd ~/Projects/MoonPhaseWallpaper
 git pull
 ./install.sh
+./moon_wallpaper.sh -c
 ```
 
 Running the installer again is always safe. It verifies the installation and updates the optional systemd integration, including the wallpaper update interval if required.
+
+Running the Configuration Wizard will update your configuration to the latest version while keeping your existing settings. Failing to run the Configuration Wizard after an update will cause the script to fail.
 
 ## 10. Uninstallation
 
