@@ -80,6 +80,11 @@ local start end elapsed
 local MOON_EVENT_LOOKBACK_HOURS=3   # calculate three hours into previous day to catch events near midnight
                                     # sufficient to detect all observed midnight crossings
 readonly MOON_EVENT_LOOKBACK_HOURS
+local selected_day
+local selected_hour
+local edge_day
+local edge_hour
+local next_year
 
     start=$(date +%s.%N)
     logv "In calculate_moon_metadata"
@@ -104,9 +109,24 @@ readonly MOON_EVENT_LOOKBACK_HOURS
                             # ...
 
         declare -n moondata="moondata_$selected_year"
-
         raw_line1="${moondata[$line_index]}"
-        raw_line2="${moondata[$((line_index+1))]}"
+
+        # deal with an 'edge case': last hour of the year
+        # Avoid trying to access a line in moondata which does not exist
+        selected_day=$(date --utc -d "$i days ago" +%d-%m)
+        selected_hour=$(date --utc -d "$i days ago" +%H)
+        edge_day="31-12"
+        edge_hour="23"
+
+        if [[ $selected_day == $edge_day && $selected_hour == $edge_hour ]]; then
+            next_year=$((selected_year + 1))
+
+            declare -n moondata2="moondata_$next_year"
+            raw_line2="${moondata2[1]}"
+        else
+            raw_line2="${moondata[$((line_index+1))]}"
+        fi
+
         logd "Line index:    $line_index"
         logd "Raw Line:      $raw_line1"
         logd "Raw Line:      $raw_line2"
