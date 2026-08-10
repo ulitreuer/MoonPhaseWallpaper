@@ -20,30 +20,34 @@
 read_moon_info()
 {
 local start end elapsed
+local year
+local mooninfo_name
+local mooninfo_local
+local mooninfo_url
+
 
     start=$(date +%s.%N)
     logv "In read_moon_info"
-    # "$url_for_this_year/mooninfo_$year.txt" (only if it does not exist locally)
-    mooninfo_name_this_year=mooninfo_"$this_year".txt
-    mooninfo_this_year="$ddir/$mooninfo_name_this_year"
-    logd "Mooninfo (this year):  $mooninfo_this_year"
-    if [[ ! -e "$mooninfo_this_year" ]]; then # local file does not exist
-        logv "downloading..."
-        curl -L -o "$mooninfo_this_year" "$mooninfo_URL" 2> /dev/null
-    fi
 
-    # do the same for previous year
-    mooninfo_name_prev_year=mooninfo_"$prev_year".txt
-    mooninfo_prev_year="$ddir/$mooninfo_name_prev_year"
-    logd "Mooninfo (prev year):  $mooninfo_prev_year"
-    if [[ ! -e "$mooninfo_prev_year" ]]; then # local file does not exist
-        logv "downloading..."
-        curl -L -o "$mooninfo_prev_year" "$mooninfo_URL" 2> /dev/null
-    fi
+    for year in "${!nasa_url[@]}"; do
+        mooninfo_name="mooninfo_$year.txt"
+        mooninfo_local="$ddir/$mooninfo_name"
 
-    # load the files
-    mapfile -t moondata_this_year < "$mooninfo_this_year"
-    mapfile -t moondata_prev_year < "$mooninfo_prev_year"
+        logd "Mooninfo ($year):  $mooninfo_name"
+
+        if [[ ! -e "$mooninfo_local" ]]; then
+            mooninfo_url="${nasa_url[$year]}/$mooninfo_name"
+            logv "downloading... $mooninfo_url"
+            curl -L -o "$mooninfo_local" "$mooninfo_url" 2> /dev/null
+        fi
+
+        # The following creates indexed arrays with the year in the name:
+        #   moondata_2025
+        #   moondata_2026
+        declare -n moondata="moondata_$year"
+        mapfile -t moondata < "$mooninfo_local"
+    done
+
     end=$(date +%s.%N)
     elapsed=$(awk "BEGIN { printf \"%.2f\", $end - $start }")
     logd "Function completed in ${elapsed} seconds."
@@ -98,13 +102,11 @@ readonly MOON_EVENT_LOOKBACK_HOURS
                             # index 1 = 01 Jan 00:00 UTC (moon.0001.tif)
                             # index 2 = 01 Jan 01:00 UTC (moon.0002.tif)
                             # ...
-        if [[ "$selected_year" -eq "$this_year" ]]; then
-            raw_line1="${moondata_this_year[$line_index]}"
-            raw_line2="${moondata_this_year[$((line_index+1))]}"
-        else
-            raw_line1="${moondata_prev_year[$line_index]}"
-            raw_line2="${moondata_this_year[$((line_index+1))]}"
-        fi
+
+        declare -n moondata="moondata_$selected_year"
+
+        raw_line1="${moondata[$line_index]}"
+        raw_line2="${moondata[$((line_index+1))]}"
         logd "Line index:    $line_index"
         logd "Raw Line:      $raw_line1"
         logd "Raw Line:      $raw_line2"
@@ -150,12 +152,7 @@ readonly MOON_EVENT_LOOKBACK_HOURS
 
             for ((hour=0; hour<24+MOON_EVENT_LOOKBACK_HOURS; hour++)); do
                 line_index=$((first_hour+hour+1))
-
-                if [[ "$selected_year" -eq "$this_year" ]]; then
-                    daily_data+="${moondata_this_year[$line_index]}"$'\n'
-                else
-                    daily_data+="${moondata_prev_year[$line_index]}"$'\n'
-                fi
+                daily_data+="${moondata[$line_index]}"$'\n'
             done
             result=$(
                 calc_moonrise_set \

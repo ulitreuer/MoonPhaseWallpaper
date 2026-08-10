@@ -29,6 +29,7 @@ CONFIGURATION_FILE_DEFAULT_READ=false
 #==================================================================================================
 read_configuration()
 {
+local year
 local start end elapsed
 
     if $CONFIGURATION_FILE_READ; then
@@ -42,6 +43,7 @@ local start end elapsed
             return 2
         fi
         CONFIGURATION_FILE_READ=true
+        load_nasa_data_sources || return 2
         validate_configuration || return 2
 
         logd "CONFIGURATION_VERSION:      $CONFIGURATION_VERSION"
@@ -50,10 +52,9 @@ local start end elapsed
         logd "SCREEN:                     $SCREEN"
         logd "OBSERVER_LATITUDE:          $OBSERVER_LATITUDE"
         logd "OBSERVER_LONGITUDE:         $OBSERVER_LONGITUDE"
-        logd "NASA_CURR_YEAR:             $NASA_CURR_YEAR"
-        logd "NASA_SVS_URL_CURRENT_YEAR:  $NASA_SVS_URL_CURRENT_YEAR"
-        logd "NASA_PREV_YEAR:             $NASA_PREV_YEAR"
-        logd "NASA_SVS_URL_PREVIOUS_YEAR: $NASA_SVS_URL_PREVIOUS_YEAR"
+        for year in "${!nasa_url[@]}"; do
+            logd "NASA_URL: $year ${nasa_url[$year]}"
+        done
     else
         return 1
     fi
@@ -66,6 +67,42 @@ local start end elapsed
     return 0
 }
 
+#==================================================================================================
+# load_nasa_data_sources
+#
+# Processes the NASA entries from the configuration file and stores them in an associative array.
+# The plausibility of the NASA URLs is checked.
+#
+# Return values:
+#       0 => valid
+#       1 => invalid
+#==================================================================================================
+load_nasa_data_sources()
+{
+    local year_var
+    local url_var
+    local id
+    local -a nasa_years
+    local -a nasa_urls
+    local i
+
+    # build a lookup table
+    for year_var in "${!NASA_YEAR_@}"; do
+        id="${year_var#NASA_YEAR_}"
+        nasa_years+=("${!year_var}")
+
+        url_var="NASA_SVS_URL_$id"
+        nasa_urls+=("${!url_var}")
+    done
+    validate_nasa_configuration nasa_years nasa_urls || {
+        nasa_configuration_error
+        return 1
+    }
+    # fill the final associate array for the URLs after validation
+    for i in "${!nasa_years[@]}"; do
+       nasa_url["${nasa_years[$i]}"]="${nasa_urls[$i]}"
+    done
+}
 
 #==================================================================================================
 # validate_configuration
@@ -100,14 +137,6 @@ validate_configuration()
     }
     validate_longitude             "$OBSERVER_LONGITUDE" || {
         configuration_error "Invalid OBSERVER_LONGITUDE in file" "$configfile"
-        return 2
-    }
-    validate_nasa_configuration \
-        "$NASA_CURR_YEAR" \
-        "$NASA_SVS_URL_CURRENT_YEAR" \
-        "$NASA_PREV_YEAR" \
-        "$NASA_SVS_URL_PREVIOUS_YEAR" || {
-        configuration_error "Invalid NASA configuration in file" "$configfile"
         return 2
     }
 
@@ -270,7 +299,10 @@ local lon="$2"
 #==================================================================================================
 # validate_nasa_configuration
 #
-# Verify that NASA configuration section as loaded from the configuration file.
+# Verify that NASA years as loaded from the configuration file exist and contain the expected
+# values for the current and previous year (and next year for the edge case Dec. 31).
+# Verify also that the file does not contain duplicate entries for the years relevant for the
+# operation of the script.
 # Correctness of URLs cannot be verified as NASA does not follow a known logic.
 # Only plausibility checks are possible.
 #
@@ -280,16 +312,101 @@ local lon="$2"
 #==================================================================================================
 validate_nasa_configuration()
 {
-local curr_year="$1"
-local curr_url="$2"
-local prev_year="$3"
-local prev_url="$4"
+local -n year_array="$1"
+local -n url_array="$2"
+local curr_year
+local prev_year
+local next_year
+local today
+local edge_day
+local i
+local year
+local url
 
-    validate_nasa_year "$curr_year" || return 1
-    validate_nasa_year "$prev_year" || return 1
-    validate_nasa_url_format "$curr_url" || return 1
-    validate_nasa_url_format "$prev_url" || return 1
-    validate_nasa_configuration_years "$curr_year" "$prev_year" || return 1
+local curr_year_specified=false
+local prev_year_specified=false
+local next_year_required=false
+
+local next_year_specified
+
+local curr_year_count=0
+local prev_year_count=0
+local next_year_count=0
+
+    curr_year=$(date --utc +%Y)
+    prev_year=$((curr_year - 1))
+    next_year=$((curr_year + 1))
+
+    today=$(date --utc +%d-%m)
+    edge_day="31-12"
+    if [[ $today == $edge_day ]]; then
+        # entry for next year is needed
+        next_year_required=true
+    fi
+
+    for i in "${!year_array[@]}"; do
+        year=${year_array[$i]}
+        url=${url_array[$i]}
+
+        if [[ $year == $curr_year ]]; then
+            curr_year_specified=true
+            validate_nasa_url_format "$url" || {
+                configuration_error "Invalid NASA configuration in file" "$configfile"
+                return 2
+            }
+        elif [[ $year == $prev_year ]]; then
+            prev_year_specified=true
+            validate_nasa_url_format "$url" || {
+                configuration_error "Invalid NASA configuration in file" "$configfile"
+                return 2
+            }
+        elif [[ $year == $next_year ]]; then
+            if $next_year_required; then
+                next_year_specified=true
+                validate_nasa_url_format "$url" || {
+                    configuration_error "Invalid NASA configuration in file" "$configfile"
+                    return 2
+                }
+            else
+                unset 'year_array[$i]'
+                unset 'url_array[$i]'
+            fi
+        else
+            unset 'year_array[$i]'
+            unset 'url_array[$i]'
+        fi
+    done
+
+    # now check for duplicate years
+    for i in "${!year_array[@]}"; do
+        year=${year_array[$i]}
+        url=${url_array[$i]}
+
+        if [[ $year == $curr_year ]]; then
+            ((++curr_year_count))
+        elif [[ $year == $prev_year ]]; then
+            ((++prev_year_count))
+        elif [[ $year == $next_year ]]; then
+            if $next_year_required; then
+                ((++next_year_count))
+            fi
+        fi
+    done
+
+    [[ $curr_year_specified == true ]] || return 1
+    [[ $prev_year_specified == true ]] || return 1
+
+    if $next_year_required && ! $next_year_specified; then
+        return 1
+    fi
+
+    (( curr_year_count > 1 )) && return 1
+    (( prev_year_count > 1 )) && return 1
+
+    if $next_year_required ; then
+        (( next_year_count != 1 )) && return 1
+    fi
+
     return 0
 }
 
@@ -335,41 +452,6 @@ local url="$1"
 }
 
 #==================================================================================================
-# validate_nasa_configuration_years
-#
-# Verify that NASA years as loaded from the configuration file exist and contain the expected
-# values for the current and previous year.
-#
-# Return values:
-#       0 => valid
-#       1 => invalid
-#==================================================================================================
-validate_nasa_configuration_years()
-{
-local conf_curr_year="$1"
-local conf_prev_year="$2"
-local curr_year
-local prev_year
-
-    curr_year=$(date --utc +%Y)
-    prev_year=$((curr_year - 1))
-
-    [[ -n $conf_curr_year ]] || return 1
-    [[ -n $conf_prev_year ]] || return 1
-
-    if [[ $conf_curr_year != "$curr_year" ]]; then
-        nasa_configuration_error "$curr_year" "$prev_year" "$conf_curr_year" "$conf_prev_year"
-        return 1
-    fi
-    if [[ $conf_prev_year != "$prev_year" ]]; then
-        nasa_configuration_error "$curr_year" "$prev_year" "$conf_curr_year" "$conf_prev_year"
-        return 1
-    fi
-
-    return 0
-}
-
-#==================================================================================================
 # nasa_configuration_error
 #
 # Inform the user if there are inconsistencies for the years defined in the NASA section
@@ -381,21 +463,8 @@ local prev_year
 #==================================================================================================
 nasa_configuration_error()
 {
-local curr_year="$1"
-local prev_year="$2"
-local conf_curr_year="$3"
-local conf_prev_year="$4"
-
     echo "The NASA configuration appears to be out of date or inconsistent."
     echo
-    echo "Expected:"
-    echo "    Current year : $curr_year"
-    echo "    Previous year: $prev_year"
-    echo
-    echo "Configured:"
-    echo "    Current year : $conf_curr_year"
-    echo "    Previous year: $conf_prev_year"
-
     echo "Please update the NASA configuration section in:"
     echo "    $configfile"
 }
@@ -549,25 +618,6 @@ local -n longitude_ref=$2
 }
 
 #==================================================================================================
-# conf_get_nasa_url_data
-#
-# Returns by reference the NASA URL-related data as loaded from configuration file
-#==================================================================================================
-conf_get_nasa_url_data()
-{
-local -n curr_year_ref=$1
-local -n curr_year_url_ref=$2
-local -n prev_year_ref=$3
-local -n prev_year_url_ref=$4
-
-    read_configuration
-    curr_year_ref=$NASA_CURR_YEAR
-    curr_year_url_ref=$NASA_SVS_URL_CURRENT_YEAR
-    prev_year_ref=$NASA_PREV_YEAR
-    prev_year_url_ref=$NASA_SVS_URL_PREVIOUS_YEAR
-}
-
-#==================================================================================================
 # conf_write_configuration
 #
 # Make the configuration as determined by the configuration wizard persistent
@@ -622,53 +672,6 @@ NASA_PREV_YEAR="$wizard_default_prev_year"
 NASA_SVS_URL_PREVIOUS_YEAR="$wizard_default_prev_url"
 
 EOF
-}
-
-#==================================================================================================
-# define_moonimage_URLs
-#
-# Defines the URLs from which the moon images will be downloaded.
-#
-# The years and URLs are defined in the configuration file configuration/moon_wallpaper.conf and
-# must be updated every year. Instructions how to do that are included in the configuration file
-#==================================================================================================
-define_moonimage_URLs()
-{
-local nasa_curr_year nasa_curr_year_url nasa_prev_year nasa_prev_year_url
-local start end elapsed
-
-    start=$(date +%s.%N)
-    logv "In define_moonimage_URLs"
-
-    # Get NASA data as defined by configuration
-    conf_get_nasa_url_data nasa_curr_year nasa_curr_year_url nasa_prev_year nasa_prev_year_url
-
-   # current and previous year (in UTC)
-    readonly this_year=$(date --utc +"%Y")
-    readonly prev_year=$(date --utc -d "last year" +"%Y")
-
-    if [[ "$this_year" == "$nasa_curr_year" ]]; then
-        url_for_this_year="$nasa_curr_year_url"
-        url_for_prev_year="$nasa_prev_year_url"
-    else
-        # incorrect configuration, needs to be updated for new year.
-        loge "Configuration error."
-        loge " "
-        loge "Please update:"
-        loge "    $configfile"
-        exit 1
-    fi
-
-    logd "This Year:      $this_year"
-    logd "Prev Year:      $prev_year"
-    logd "URL this year:  $url_for_this_year"
-    logd "URL prev year:  $url_for_prev_year"
-    end=$(date +%s.%N)
-    elapsed=$(awk "BEGIN { printf \"%.2f\", $end - $start }")
-    logd "Completed in ${elapsed} seconds."
-    logv "================================================================================"
-    logv " "
-
 }
 
 #==================================================================================================

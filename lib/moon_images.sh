@@ -72,12 +72,8 @@ local num
        #----------------------------------------------------------------------------------------------
         # determine name and URL of the moon image to be downloaded from the NASA web page
         moonimage+=("moon.$(printf '%04d' $num).tif") # filename for image to download
+        moonimage_URL+=("${nasa_url[$selected_year]}/frames/3840x2160_16x9_30p/plain/${moonimage[i]}")
 
-        if [[ "$selected_year" -eq "$this_year" ]]; then
-            moonimage_URL+=("$url_for_this_year/frames/3840x2160_16x9_30p/plain/${moonimage[i]}")  # URL for download
-        else
-            moonimage_URL+=("$url_for_prev_year/frames/3840x2160_16x9_30p/plain/${moonimage[i]}")  # URL for download
-        fi
         logd "Moonimage:     ${moonimage[i]}"
         logd "Moonimage_URL: ${moonimage_URL[i]}"
         #----------------------------------------------------------------------------------------------

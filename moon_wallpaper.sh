@@ -87,19 +87,6 @@ if $configuration_mode; then
     exit 0
 fi
 
-# Read all configuration data
-read_configuration
-case $? in
-    1)
-        # exit application
-        fatal_configuration_error "Configuration file is missing:" "$configfile"
-        ;;
-    2)
-        # exit application
-        fatal_configuration_error "Configuration file is corrupt:" "$configfile"
-        ;;
-esac
-
 # Declare all global arrays which are needed
 declare -a moonimage
 declare -a moonimage_URL
@@ -114,6 +101,20 @@ declare -a axisA
 declare -a moonrise
 declare -a moonset
 declare -a moonstatus
+declare -A nasa_url
+
+# Read all configuration data
+read_configuration
+case $? in
+    1)
+        # exit application
+        fatal_configuration_error "Configuration file is missing:" "$configfile"
+        ;;
+    2)
+        # exit application
+        fatal_configuration_error "Configuration file is corrupt:" "$configfile"
+        ;;
+esac
 
 # Verify that configured screen is available/connected.
 # If not then do not try to update the wallpaper and exit gracefully.
@@ -126,12 +127,6 @@ fi
 
 # Cleanup (just in case the previous run was interrupted and there are leftovers)
 clear_image_dir
-
-# Defines the URLs from which the moon images will be downloaded.
-# The URLs must be updated at the end of each year for the following year.
-# Instructions are contained in the header of function define_moonimage_URLs
-# in the file lib/config.sh
-define_moonimage_URLs
 
 # Download the text file for phase/illumination from the NASA web page
 read_moon_info
