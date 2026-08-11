@@ -141,7 +141,11 @@ read_moon_info
 calculate_moon_metadata
 
 # Download all moon image as defined before from the NASA web page in parallel
-download_moon_images
+if ! download_moon_images; then
+    loge "Download error."
+    loge "Moon images could not be downloaded."
+    exit 1
+fi
 
 # Create the final image (one big image for current date and time) and 6 small inserts on the final
 # image showing the moon image for the 6 days before today (making it the complete last week)

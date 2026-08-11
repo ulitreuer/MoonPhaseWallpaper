@@ -24,6 +24,10 @@ local i
 local start end elapsed
 local cache_name
 local status
+local -a curl_pid
+local download_failed=false
+local tries
+local MAX_TRIES=3
 
     start=$(date +%s.%N)
     logv "In download_moon_images"
@@ -40,12 +44,53 @@ local status
     # get the name of the current cache directory
     get_cache_name cache_name
 
-    for (( i=0; i<7; i++ )); do
-        logv "Downloading image $((i+1)) of 7"
-        # download the moon image
-        curl -L -o "$imdir"/"$cache_name"/"${moonimage[$i]}" "${moonimage_URL[$i]}" 2> /dev/null &
+    for (( tries=1; tries<=MAX_TRIES; tries++ )); do
+        download_failed=false
+
+        logv "Download attempt $tries of $MAX_TRIES"
+
+        for (( i=0; i<7; i++ )); do
+            logv "Downloading image $((i+1)) of 7"
+
+            # download the moon image
+            curl --fail -L \
+                -o "$imdir/$cache_name/${moonimage[$i]}" \
+                "${moonimage_URL[$i]}" \
+                2> /dev/null &
+
+            curl_pid[$i]=$!
+        done
+
+        # wait until all downloads have been completed
+        for (( i=0; i<7; i++ )); do
+            if wait "${curl_pid[$i]}"; then
+                if [[ -s "$imdir/$cache_name/${moonimage[$i]}" ]]; then
+                    logd "Download successful: ${moonimage[$i]}"
+                else
+                    loge "Downloaded file is empty: ${moonimage[$i]}"
+                    download_failed=true
+                fi
+            else
+                loge "Download failed: ${moonimage[$i]}"
+                download_failed=true
+            fi
+        done
+
+        if $download_failed; then
+            logd "Download attempt $tries failed."
+            if (( tries < MAX_TRIES )); then
+                logd "Clearing cache and retrying."
+                clear_cache_dir
+                get_cache_name cache_name
+            fi
+        else
+            break
+        fi
     done
-    wait # wait until all downloads have been completed
+
+    if $download_failed; then
+        return 1
+    fi
 
     end=$(date +%s.%N)
     elapsed=$(awk "BEGIN { printf \"%.2f\", $end - $start }")
