@@ -19,7 +19,7 @@
 # moon phase from the NASA web page https://svs.gsfc.nasa.gov/.
 # A nice image is created by overlaying the moon phase information to the downloaded image.
 # Finally, the image is set as the wallpaper on the screen of the Activity selected during
-# configuration. This script is called by a user-specific systemd timer at minute 0 of every hour.
+# configuration. This script is called by a user-defined interval.
 #
 # Features:
 # - Automatic download of NASA yearly Moon dataset
@@ -28,12 +28,15 @@
 # - Observer-dependent apparent orientation
 # - Dynamic text overlay
 # - Automatic wallpaper generation
-
+#
 # Dependencies:
-# - bash
-# - ImageMagick
-# - gawk
-# - curl
+# - Git             Clone and update the repository
+# - Bash            Main application
+# - GNU Awk         Astronomical calculations
+# - ImageMagick     Image composition
+# - curl            Download NASA data and images
+# - qdbus-qt6       Communicate with KDE Plasma
+# - KDE Plasma 6    Wallpaper management and JavaScript execution
 #==================================================================================================
 
 # for determining run duration
@@ -155,4 +158,5 @@ logv "Completed in ${SECONDS} seconds."
 logv "================================================================================"
 
 exit 0
+
 # --- This is the end, my friend ------------------------------------------------------------------

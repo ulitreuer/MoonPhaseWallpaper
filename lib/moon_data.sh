@@ -25,7 +25,6 @@ local mooninfo_name
 local mooninfo_local
 local mooninfo_url
 
-
     start=$(date +%s.%N)
     logv "In read_moon_info"
 
@@ -345,9 +344,9 @@ local minute="$3"
 # #==================================================================================================
 interpolate_age()
 {
-    local val1="$1"
-    local val2="$2"
-    local minute="$3"
+local val1="$1"
+local val2="$2"
+local minute="$3"
 
     awk \
         -v val1="$val1" \

@@ -17,8 +17,8 @@
 # Set the generated image as the wallpaper for the configured Activity and Screen
 # using Plasma 6 functionality.
 # Comments and considerations:
-#       - Updating the wallpaper only works for the currently active Activity. Therefore we need to
-#         switch to the target Activity before updating the wallpaper and then back to the
+#       - Updating the wallpaper only works for the currently active Activity. Therefore we need
+#         to switch to the target Activity before updating the wallpaper and then back to the
 #         original Activity. To be able to do that we need to determine the currently active
 #         Activity, remember it, switch to the target Activity, change the wallpaper, and change
 #         back to the Activity we remembered.

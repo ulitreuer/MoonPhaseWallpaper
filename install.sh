@@ -147,7 +147,7 @@ local -n status_ref=$2
 #==================================================================================================
 # check_dependencies
 #
-# Checks whether all required software is in installed.
+# Checks whether all required software is installed.
 #==================================================================================================
 check_dependencies()
 {
@@ -386,7 +386,7 @@ local -n answer_ref=$2
 #   $2  minimum
 #   $3  maximum
 #   $4  default
-# Output
+# Output:
 #   $5  entered value
 #==================================================================================================
 ask_positive_integer()

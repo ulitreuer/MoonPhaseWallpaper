@@ -180,7 +180,8 @@ local cache_name
 #==================================================================================================
 clear_cache_dir()
 {
-    local cache_name
+local cache_name
+
     get_cache_name cache_name
 
     rm -rf "$imdir/$cache_name"

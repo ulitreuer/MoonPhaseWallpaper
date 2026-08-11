@@ -30,14 +30,14 @@
 #==================================================================================================
 calc_moon_rotation()
 {
-    local day="$1"
-    local month="$2"
-    local year="$3"
-    local hour="$4"
-    local ra="$5"
-    local dec="$6"
-    local axis="$7"
-    local latitude longitude
+local day="$1"
+local month="$2"
+local year="$3"
+local hour="$4"
+local ra="$5"
+local dec="$6"
+local axis="$7"
+local latitude longitude
 
     # Get observer location as defined by configuration.
     conf_get_observer_data latitude longitude
@@ -144,11 +144,11 @@ calc_moon_rotation()
 #==================================================================================================
 calc_moonrise_set()
 {
-    local data="$1"
-    local year="$2"
-    local current_hour="$3"
-    local lookback_hours="$4"
-    local latitude longitude
+local data="$1"
+local year="$2"
+local current_hour="$3"
+local lookback_hours="$4"
+local latitude longitude
 
     # Get observer location as defined by configuration.
     conf_get_observer_data latitude longitude

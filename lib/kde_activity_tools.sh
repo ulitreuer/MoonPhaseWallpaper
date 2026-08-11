@@ -155,9 +155,9 @@ local ACT_ID ACT_NAME ACT_DESC ACT_ICON
 #==================================================================================================
 get_num_screens()
 {
-    local -n num_screens_ref=$1
-    local BUS
-    local js_script
+local -n num_screens_ref=$1
+local BUS
+local js_script
 
     logd "In get_num_screens"
 

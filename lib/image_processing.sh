@@ -52,7 +52,7 @@ local cache_name
         exit 1
     }
 
-get_cache_name cache_name
+    get_cache_name cache_name
 
     for (( i=0; i<7; i++ )); do
         read -r \
@@ -75,8 +75,6 @@ get_cache_name cache_name
 
     y_pos=1025
     for (( i=0; i<7; i++ )); do
-logd "Cache name : $cache_name"
-logd "Image path : $cache_name/${moonimage[i]}"
         rotation=$(calc_moon_rotation \
             "${rotation_day_utc[i]}" \
             "${rotation_mon_utc[i]}" \
@@ -125,6 +123,7 @@ logd "Image path : $cache_name/${moonimage[i]}"
 
         if (( i == 0 )); then
             logv "Processing big image $((i+1))"
+            logd "Image: $cache_name/${moonimage[i]}"
             # Step 1: resize star background image
             # Step 2: resize downloaded image
             # Step 3: rotate downloaded image according to observer position
@@ -170,6 +169,7 @@ logd "Image path : $cache_name/${moonimage[i]}"
 
         else
             logv "Processing small image $((i+1))"
+            logd "Image: $cache_name/${moonimage[i]}"
             # Step 1: resize star background image
             # Step 2: resize downloaded image
             # Step 3: rotate downloaded image according to observer position
