@@ -6,12 +6,17 @@ The format is inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 and this project adheres to Semantic Versioning.
 
 ---
+## [1.2.3] - 2026-08-15
+
+### Changed
+
+- Updating the wallpaper on an Activity other than the currently active Activity now works without switching to that Activity temporarily. This removes screen flicker and prevents the keyboard focus from being stolen.
+
 ## [1.2.2] - 2026-08-11
 
 ### Changed
 
 - Failed downloads of moon images are detected more reliably. After a download failure, up to two additional download attempts are made before exiting with an error.
-
 
 ## [1.2.1] - 2026-08-10
 
