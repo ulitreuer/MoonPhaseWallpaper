@@ -16,33 +16,6 @@
 #
 # Activate the Activity with the specified ID. Do nothing if this Activity is already active.
 #==================================================================================================
-switch_to_activity()
-{
-local new_activity_id="$1"
-local current_activity_id
-
-    get_current_activity_id current_activity_id
-
-    # switch to specified Activity (if not currently active)
-    if [[ "$current_activity_id" != "$new_activity_id" ]]; then
-        get_activity_bus BUS
-        qdbus-qt6 --bus "$BUS" org.kde.ActivityManager /ActivityManager/Activities SetCurrentActivity "$new_activity_id"
-    fi
-}
-
-#==================================================================================================
-# get_current_activity_id
-#
-# Return the ID of the currently active Activity.
-#==================================================================================================
-get_current_activity_id()
-{
-local -n activity_id_ref=$1
-local BUS
-
-    get_activity_bus BUS
-    activity_id_ref=$(qdbus-qt6 --bus "$BUS" org.kde.ActivityManager /ActivityManager/Activities CurrentActivity)
-}
 
 #==================================================================================================
 # activity_id_from_name
@@ -56,8 +29,12 @@ local -n activity_id_ref=$2
 
 local -A activity_map
 
+# num_activities is not used in this function.
+# Serves only the purpose to satisfy the signature of create_activity_map
+local num_activities
+
     logd "In activity_id_from_name"
-    create_activity_map activity_map
+    create_activity_map activity_map num_activities
 
     # Get ID of requested activity from activity_map
     activity_id_ref="${activity_map["$activity_name"]}"
