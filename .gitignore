@@ -6,6 +6,8 @@ images/moon_wallpaper_*.png
 
 # Moon image cache directories
 images/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/
+images/moon_annotations.txt
+images/moon_widget.png
 
 # User-specific configuration file
 configuration/moon_wallpaper.conf

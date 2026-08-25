@@ -167,6 +167,17 @@ local cache_name
                 -draw "text 1525,1000 '$text8'" \
                 final.tif
 
+                printf '%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
+                    "$text1" \
+                    "$text2" \
+                    "$text3" \
+                    "$text4" \
+                    "$text5" \
+                    "$text6" \
+                    "$text7" \
+                    "$text8" \
+                    > "moon_annotations.txt"
+
         else
             logv "Processing small image $((i+1))"
             logd "Image: $cache_name/${moonimage[i]}"
@@ -220,6 +231,8 @@ local cache_name
 
     # Convert the final image to PNG to reduce file size.
     magick final.tif $wallpaper_name_ref
+
+    magick final.tif -crop 940x940+490+70 +repage moon_widget.png
 
     clear_image_dir
 
