@@ -232,7 +232,7 @@ local cache_name
     # Convert the final image to PNG to reduce file size.
     magick final.tif $wallpaper_name_ref
 
-    magick final.tif -crop 940x940+490+70 +repage moon_widget.png
+    magick final.tif -crop 1080x1080+400+0 +repage moon_widget.png
 
     clear_image_dir
 
