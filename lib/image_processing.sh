@@ -167,6 +167,24 @@ local cache_name
                 -draw "text 1525,1000 '$text8'" \
                 final.tif
 
+            # Create an image for the MoonPhaseWidget
+            # without background and annotations
+            magick \
+                "$cache_name"/"${moonimage[i]}" \
+                    -resize "${new_x}x${new_y}" \
+                    -background none \
+                    -rotate "$rotation" \
+                    +repage \
+                    -gravity center \
+                    -crop "${new_x}x${new_y}+0+0" \
+                    +repage \
+                    -modulate 110x100 \
+                tmp.tif
+
+                magick tmp.tif -crop 1080x1080+400+0 +repage moon_widget.png
+                rm -f tmp.tif
+
+                # Annotations used by the MoonPhaseWidget
                 printf '%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
                     "$text1" \
                     "$text2" \
@@ -231,8 +249,6 @@ local cache_name
 
     # Convert the final image to PNG to reduce file size.
     magick final.tif $wallpaper_name_ref
-
-    magick final.tif -crop 1080x1080+400+0 +repage moon_widget.png
 
     clear_image_dir
 
