@@ -213,11 +213,11 @@ local latitude longitude
             a1=altitude_index[i-1]
             a2=altitude_index[i]
 
-            if(a1<0 && a2>=0){
+            if(a1<0 && a2>=0 && i>=lookback_hours){
                 rise_minutes = linear_interpolation(a1,a2,i-lookback_hours-1)
             }
 
-            if(a1>=0 && a2<0){
+            if(a1>=0 && a2<0 && i>=lookback_hours){
                 set_minutes = linear_interpolation(a1,a2,i-lookback_hours-1)
             }
         }
