@@ -6,6 +6,12 @@ The format is inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 and this project adheres to Semantic Versioning.
 
 ---
+## [1.2.4] - 2026-09-15
+
+### Fixed
+
+- Corrected the calculation of times for moonrise and moonset for edge cases with only moonrise or moonset at one day (but not both).
+
 ## [1.2.3] - 2026-08-15
 
 ### Changed
