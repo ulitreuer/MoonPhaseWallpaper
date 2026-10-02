@@ -24,12 +24,15 @@ local year
 local mooninfo_name
 local mooninfo_local
 local mooninfo_url
+local mooninfo_format
+
+    mooninfo_format="json"   # allowed values: "txt" or "json"
 
     start=$(date +%s.%N)
     logv "In read_moon_info"
 
     for year in "${!nasa_url[@]}"; do
-        mooninfo_name="mooninfo_$year.txt"
+        mooninfo_name="mooninfo_$year.$mooninfo_format"
         mooninfo_local="$ddir/$mooninfo_name"
 
         logd "Mooninfo ($year):  $mooninfo_name"
@@ -44,7 +47,42 @@ local mooninfo_url
         #   moondata_2025
         #   moondata_2026
         declare -n moondata="moondata_$year"
-        mapfile -t moondata < "$mooninfo_local"
+
+        if [[ "$mooninfo_format" == "txt" ]]; then
+            mapfile -t moondata < "$mooninfo_local"
+
+        elif [[ "$mooninfo_format" == "json" ]]; then
+            mapfile -t moondata < <(
+                printf '%s\n' \
+                    '   Date       Time    Phase    Age    Diam    Dist     RA        Dec      Slon      Slat     Elon     Elat   AxisA'
+
+                jq -r '
+                    .[] |
+                    [
+                        .time,
+                        .phase,
+                        .age,
+                        .diameter,
+                        .distance,
+                        .j2000.ra,
+                        .j2000.dec,
+                        .subsolar.lon,
+                        .subsolar.lat,
+                        .subearth.lon,
+                        .subearth.lat,
+                        .posangle
+                    ] |
+                    @tsv
+                ' "$mooninfo_local" |
+                awk -F '\t' '{
+                    printf "%s  %.2f  %.3f  %.1f  %.0f  %.4f  %.4f  %.3f  %.3f  %.3f  %.3f  %.3f\n",
+                        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+                }'
+            )
+        else
+            loge "Unsupported mooninfo format: $mooninfo_format"
+            return 1
+        fi
     done
 
     end=$(date +%s.%N)
