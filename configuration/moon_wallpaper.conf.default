@@ -39,6 +39,7 @@ OBSERVER_LONGITUDE=7.8664
 # This is the NASA page with the data for 2024: https://svs.gsfc.nasa.gov/5187/
 # This is the NASA page with the data for 2025: https://svs.gsfc.nasa.gov/5415/
 # This is the NASA page with the data for 2026: https://svs.gsfc.nasa.gov/5587/
+# This is the NASA page with the data for 2027: https://svs.gsfc.nasa.gov/5691/
 NASA_YEAR_1="2024"
 NASA_SVS_URL_1="https://svs.gsfc.nasa.gov/vis/a000000/a005100/a005187"
 
@@ -49,7 +50,7 @@ NASA_YEAR_3="2026"
 NASA_SVS_URL_3="https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587"
 
 NASA_YEAR_4="2027"
-NASA_SVS_URL_4="tbd"
+NASA_SVS_URL_4="https://svs.gsfc.nasa.gov/vis/a000000/a005600/a005691"
 
 NASA_YEAR_5="2028"
 NASA_SVS_URL_5="tbd"
