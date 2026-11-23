@@ -6,6 +6,16 @@ The format is inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 and this project adheres to Semantic Versioning.
 
 ---
+## [1.2.5] - 2026-11-23
+
+### Changed
+
+- Changed the format of the downloaded mooninfo file from txt to json.
+
+### Added
+
+- Added the NASA URL for moon images and information for 2027
+
 ## [1.2.4] - 2026-09-15
 
 ### Fixed

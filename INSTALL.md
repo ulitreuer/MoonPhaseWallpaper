@@ -4,8 +4,8 @@
 
 MoonPhaseWallpaper has been developed and tested on
 
-- Fedora Linux 44
-- KDE Plasma 6.7
+- Fedora Linux 44 and 45
+- KDE Plasma 6.7 and 6.8
 - Wayland
 
 Other Linux distributions running KDE Plasma 6.x may also work but have not been tested.
